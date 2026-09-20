@@ -1,0 +1,51 @@
+{
+  "name": "@johnhenry/domable",
+  "version": "0.0.0",
+  "description": "Convert between HTML text, real DOM nodes, and React-element-shaped objects; build DOM directly with a createElement()-style hyperscript API; turn HTML strings (or DOM nodes) into Custom Element classes.",
+  "type": "module",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./html": "./src/tags/html.mjs",
+    "./svg": "./src/tags/svg.mjs",
+    "./text-to-dom": "./src/text-to-dom.mjs",
+    "./dom-to-text": "./src/dom-to-text.mjs",
+    "./dom-to-react": "./src/dom-to-react.mjs",
+    "./react-to-dom": "./src/react-to-dom.mjs",
+    "./text-to-react": "./src/text-to-react.mjs",
+    "./react-to-text": "./src/react-to-text.mjs",
+    "./create-element": "./src/create-element.mjs",
+    "./simple-element": "./src/simple-element.mjs",
+    "./dom-to-hyperscript": "./src/dom-to-hyperscript.mjs"
+  },
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test": "node --import ./test/_setup-dom.mjs --test test/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnhenry/domable.git"
+  },
+  "homepage": "https://opensource.johnhenry.me/domable/",
+  "keywords": [
+    "dom",
+    "html",
+    "react",
+    "hyperscript",
+    "createElement",
+    "custom-elements",
+    "web-components",
+    "shadow-dom",
+    "jsx"
+  ],
+  "author": "John Henry",
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^30.1.0"
+  }
+}
