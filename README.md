@@ -1,5 +1,9 @@
 # @johnhenry/domable
 
+[![npm version](https://img.shields.io/npm/v/%40johnhenry%2Fdomable.svg)](https://www.npmjs.com/package/@johnhenry/domable)
+[![CI](https://github.com/johnhenry/domable/actions/workflows/ci.yml/badge.svg)](https://github.com/johnhenry/domable/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/%40johnhenry%2Fdomable.svg)](LICENSE)
+
 Convert between HTML text, real DOM nodes, and React-element-shaped objects.
 Build DOM directly with a `createElement()`-style hyperscript API. Turn HTML
 strings (or DOM nodes) into Custom Element classes.
@@ -19,6 +23,17 @@ No runtime dependencies. Every module is written against standard browser
 globals (`document`, `DOMParser`, `Node`, `customElements`, ...) and runs
 unmodified in a browser; tests run under Node against a real DOM
 implementation ([jsdom](https://github.com/jsdom/jsdom), not a mock).
+
+## Contents
+
+- [Install](#install)
+- [The conversion matrix](#the-conversion-matrix)
+- [`createElement` -- a hyperscript DOM builder](#createelement----a-hyperscript-dom-builder)
+- [`domToText` -- serializing DOM back to HTML, including shadow DOM](#domtotext----serializing-dom-back-to-html-including-shadow-dom)
+- [`simple-element` -- HTML text (or a `Node`) to a Custom Element class](#simple-element----html-text-or-a-node-to-a-custom-element-class)
+- [`dom-to-hyperscript` -- DOM to reconstructable source (new in this package)](#dom-to-hyperscript----dom-to-reconstructable-source-new-in-this-package)
+- [Bugs found while merging](#bugs-found-while-merging)
+- [License](#license)
 
 ## Install
 
