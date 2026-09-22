@@ -4,6 +4,8 @@
 [![CI](https://github.com/johnhenry/domable/actions/workflows/ci.yml/badge.svg)](https://github.com/johnhenry/domable/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/%40johnhenry%2Fdomable.svg)](LICENSE)
 
+Full documentation: [opensource.johnhenry.me/domable](https://opensource.johnhenry.me/domable/)
+
 Convert between HTML text, real DOM nodes, and React-element-shaped objects.
 Build DOM directly with a `createElement()`-style hyperscript API. Turn HTML
 strings (or DOM nodes) into Custom Element classes.
@@ -33,6 +35,7 @@ implementation ([jsdom](https://github.com/jsdom/jsdom), not a mock).
 - [`simple-element` -- HTML text (or a `Node`) to a Custom Element class](#simple-element----html-text-or-a-node-to-a-custom-element-class)
 - [`dom-to-hyperscript` -- DOM to reconstructable source (new in this package)](#dom-to-hyperscript----dom-to-reconstructable-source-new-in-this-package)
 - [Bugs found while merging](#bugs-found-while-merging)
+- [Honest limitations](#honest-limitations)
 - [License](#license)
 
 ## Install
@@ -274,6 +277,26 @@ real, previously-undetected bugs -- fixed here, not silently ported:
   content is allowed synchronously during construction; real browsers
   enforce this too). Fixed by deferring light-DOM content to
   `connectedCallback()` (guarded against duplicating on reconnect).
+
+## Honest limitations
+
+- **Closed shadow roots cannot be serialized.** A `mode: 'closed'` shadow
+  root makes `element.shadowRoot` return `null` by design -- there is no
+  API surface for `domToText`/`domToSource` (or any other serializer,
+  native or not) to reach content it was never handed. A closed custom
+  element serializes as just its host tag, with no shadow content. This is
+  correct, expected behavior, not a bug to fix -- see
+  [`domToText`](#domtotext----serializing-dom-back-to-html-including-shadow-dom)
+  above.
+- **Function-valued props don't become event listeners.**
+  `createElement`/`reactToDom` set every non-special prop via
+  `element.setAttribute(key, value)`, which coerces its argument to a
+  string. A React-shaped `{ onClick: () => {...} }` prop -- exactly the
+  kind of value `domToReact`'s own output can legitimately contain --
+  becomes a literal `onclick="() => {...}"` attribute string on the
+  resulting DOM node, not a real, callable event listener. Attach event
+  listeners yourself with `addEventListener()` after building the element;
+  this package has no JSX-style synthetic event system.
 
 ## License
 
