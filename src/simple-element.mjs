@@ -32,6 +32,26 @@
  * produce, which starts every element childless). Light-DOM content is
  * therefore appended in `connectedCallback()` instead, guarded so
  * reconnecting an already-initialized element doesn't duplicate it.
+ *
+ * SERIALIZABLE SHADOW ROOTS: `attachShadow()` accepts a `serializable` flag
+ * (default `false`) that's independent of `mode` -- it controls whether
+ * `Element#getHTML({ serializableShadowRoots: true })` (native, newer
+ * browsers -- `dom-to-text.mjs` prefers it when present) includes this
+ * shadow root's contents at all. Without it, `getHTML()` silently omits the
+ * shadow root's contents on browsers that implement it (observed in Chrome;
+ * this was reported against real-world usage of `shadowOpen()` as "domToText
+ * drops open shadow roots created by simple-element in Chrome"). `open`
+ * shadow roots built by this module now pass `serializable: true` so they
+ * round-trip through `domToText`/`domToSource` the way this module's own
+ * examples promise. `closed` shadow roots deliberately do NOT -- `mode` and
+ * `serializable` are unrelated flags, and `getHTML()`'s serialization walk
+ * uses the shadow root's internal `serializable` flag, not the public
+ * `element.shadowRoot` accessor `mode` gates -- so making a closed root
+ * `serializable: true` would let `getHTML()` leak its content even though
+ * `element.shadowRoot` correctly still returns `null`, defeating the one
+ * thing `closed` mode is for. See `dom-to-text.mjs`'s own doc comment (and
+ * `AGENTS.md`'s "closed shadow roots are genuinely unrecoverable") for that
+ * invariant, which this fix preserves rather than works around.
  */
 
 import textToDom from "./text-to-dom.mjs";
@@ -65,7 +85,24 @@ const createElement =
         // Shadow-DOM content IS allowed synchronously in the constructor
         // -- only light-DOM children (the `else` case, below, deferred to
         // connectedCallback) are restricted. See module doc comment.
-        if (useShadow) this.attachShadow({ mode: shadowMode }).append(...toChildren(input));
+        //
+        // `serializable: shadowMode === "open"` (see module doc comment,
+        // "SERIALIZABLE SHADOW ROOTS"): an OPEN shadow root opts in so
+        // `Element#getHTML({ serializableShadowRoots: true })` (what
+        // `dom-to-text.mjs` prefers when the browser has it) doesn't
+        // silently omit its contents. A CLOSED shadow root deliberately
+        // does NOT opt in -- `serializable` is independent of `mode` per
+        // spec, so setting it `true` unconditionally here would let
+        // `getHTML()` leak a "closed" root's content via its internal
+        // shadow-root list even though `element.shadowRoot` correctly
+        // returns `null` -- silently defeating the one guarantee `closed`
+        // mode is for. See `dom-to-text.mjs`'s own doc comment and
+        // `AGENTS.md`'s "closed shadow roots are genuinely unrecoverable".
+        if (useShadow) {
+          this.attachShadow({ mode: shadowMode, serializable: shadowMode === "open" }).append(
+            ...toChildren(input),
+          );
+        }
       }
 
       connectedCallback() {
@@ -114,7 +151,14 @@ export const constructSuperclass = ({
 
     constructor() {
       super();
-      if (shadowHTML) this.attachShadow({ mode: shadowMode }).append(...toChildren(shadowHTML));
+      // See `createElement()`'s own constructor, above, for why
+      // `serializable` mirrors `mode === "open"` rather than being `true`
+      // unconditionally.
+      if (shadowHTML) {
+        this.attachShadow({ mode: shadowMode, serializable: shadowMode === "open" }).append(
+          ...toChildren(shadowHTML),
+        );
+      }
     }
 
     connectedCallback() {
