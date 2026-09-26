@@ -71,4 +71,31 @@ describe("reactToDom", () => {
     assert.equal(rebuilt.props.className, original.props.className);
     assert.equal(rebuilt.props.children[0].type, "span");
   });
+
+  it("builds <svg> and its descendants in the SVG namespace, not HTML (issue #2)", () => {
+    const react = el("svg", { children: [el("circle", { r: "5" }), el("g", { children: [el("path", { d: "M0 0" })] })] });
+    const dom = reactToDom(react);
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    assert.equal(dom.namespaceURI, SVG_NS, "svg itself must be in the SVG namespace");
+    assert.equal(dom.children[0].namespaceURI, SVG_NS, "circle must be in the SVG namespace");
+    assert.equal(dom.children[1].namespaceURI, SVG_NS, "g must be in the SVG namespace");
+    assert.equal(dom.children[1].children[0].namespaceURI, SVG_NS, "path (grandchild) must be in the SVG namespace");
+  });
+
+  it("builds <math> and its descendants in the MathML namespace (issue #2)", () => {
+    const react = el("math", { children: [el("mrow", { children: [el("mi", { children: "x" })] })] });
+    const dom = reactToDom(react);
+    const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+    assert.equal(dom.namespaceURI, MATHML_NS);
+    assert.equal(dom.children[0].namespaceURI, MATHML_NS);
+    assert.equal(dom.children[0].children[0].namespaceURI, MATHML_NS);
+  });
+
+  it("elements outside svg/math still build in the default HTML namespace (no regression)", () => {
+    const react = el("div", { children: [el("span", { children: "hi" })] });
+    const dom = reactToDom(react);
+    const HTML_NS = "http://www.w3.org/1999/xhtml";
+    assert.equal(dom.namespaceURI, HTML_NS);
+    assert.equal(dom.children[0].namespaceURI, HTML_NS);
+  });
 });

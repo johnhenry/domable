@@ -83,6 +83,10 @@ const createElement = createElementNS(null);
 export const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 export const createSVGElement = createElementNS(SVG_NAMESPACE);
 
+/** MathML namespace factory -- `createElement`-shaped, but for `document.createElementNS(MATHML_NAMESPACE, ...)`. Exported for the same reason `SVG_NAMESPACE`/`createSVGElement` are: `react-to-dom.mjs` reuses this rather than inventing a separate namespace mechanism. */
+export const MATHML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
+export const createMathMLElement = createElementNS(MATHML_NAMESPACE);
+
 /** Shorthand for building a bare `DocumentFragment` of children -- `createElement()` with no tag, spelled without the empty first argument. */
 export const _ = (...children) => createElement(...children);
 

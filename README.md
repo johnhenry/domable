@@ -44,6 +44,10 @@ implementation ([jsdom](https://github.com/jsdom/jsdom), not a mock).
 npm install @johnhenry/domable
 ```
 
+Ships hand-written TypeScript declarations (`.d.mts`) for every module, wired
+into `package.json`'s `exports` map (a `"types"` condition on every subpath,
+not just the root) -- no `@types/` package needed.
+
 ## The conversion matrix
 
 Three representations -- **Text** (an HTML string), **DOM** (a real `Node`),
@@ -109,12 +113,18 @@ list.outerHTML;
   -- for compatibility with JSX transforms that pass children this way.
 - String children become text nodes; `Node` children are appended as-is.
 
-### SVG
+### SVG and MathML
 
 ```javascript
-import { createSVGElement, SVG_NAMESPACE } from "@johnhenry/domable/create-element";
+import { createSVGElement, SVG_NAMESPACE, createMathMLElement, MATHML_NAMESPACE } from "@johnhenry/domable/create-element";
 createSVGElement("circle", { r: "5" }).namespaceURI === SVG_NAMESPACE; // true
+createMathMLElement("mrow").namespaceURI === MATHML_NAMESPACE; // true
 ```
+
+`reactToDom` (below) is namespace-aware too: a React-element-shaped `<svg>`
+or `<math>` node, and everything nested inside it, is built in the correct
+namespace automatically -- you don't need `createSVGElement`/
+`createMathMLElement` yourself unless you're building elements directly.
 
 ### Per-tag shorthands
 
@@ -153,7 +163,12 @@ serialized that way would silently lose its entire contents.
 [Declarative Shadow DOM](https://web.dev/articles/declarative-shadow-dom)
 syntax (`<template shadowrootmode="open">...</template>`) instead. Uses the
 native `Element#getHTML({serializableShadowRoots})` where available (newer
-browsers), falling back to a manual walker everywhere else.
+browsers), falling back to a manual walker everywhere else. `open` shadow
+roots built by `simple-element` (below) are attached with
+`serializable: true` specifically so that native path includes them, rather
+than silently omitting their contents (`serializable` is a separate,
+`attachShadow()`-time flag independent of `mode` -- it, not `mode`, is what
+`getHTML()`'s `serializableShadowRoots` option actually checks).
 
 **Known limitation, not a bug**: a `mode: 'closed'` shadow root is invisible
 to `element.shadowRoot` by design -- there is no way for *any* serializer,
@@ -280,6 +295,14 @@ real, previously-undetected bugs -- fixed here, not silently ported:
 
 ## Honest limitations
 
+- **`reactToDom`'s SVG/MathML namespacing doesn't special-case
+  `<foreignObject>`.** Once inside a `<svg>` (or `<math>`), every descendant
+  is built in that namespace, matching normal HTML-parser behavior -- except
+  the parser also switches BACK to the HTML namespace for ordinary elements
+  nested inside `<foreignObject>` (the one sanctioned way to embed real HTML
+  inside SVG), and `reactToDom` does not replicate that one exception. Build
+  `<foreignObject>` content with `createElement`/the `html` tag shorthands
+  directly (not through `reactToDom`) if you need this.
 - **Closed shadow roots cannot be serialized.** A `mode: 'closed'` shadow
   root makes `element.shadowRoot` return `null` by design -- there is no
   API surface for `domToText`/`domToSource` (or any other serializer,

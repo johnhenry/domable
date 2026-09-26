@@ -1,22 +1,59 @@
 {
   "name": "@johnhenry/domable",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Convert between HTML text, real DOM nodes, and React-element-shaped objects; build DOM directly with a createElement()-style hyperscript API; turn HTML strings (or DOM nodes) into Custom Element classes.",
   "type": "module",
   "main": "./src/index.mjs",
+  "types": "./src/index.d.mts",
   "exports": {
-    ".": "./src/index.mjs",
-    "./html": "./src/tags/html.mjs",
-    "./svg": "./src/tags/svg.mjs",
-    "./text-to-dom": "./src/text-to-dom.mjs",
-    "./dom-to-text": "./src/dom-to-text.mjs",
-    "./dom-to-react": "./src/dom-to-react.mjs",
-    "./react-to-dom": "./src/react-to-dom.mjs",
-    "./text-to-react": "./src/text-to-react.mjs",
-    "./react-to-text": "./src/react-to-text.mjs",
-    "./create-element": "./src/create-element.mjs",
-    "./simple-element": "./src/simple-element.mjs",
-    "./dom-to-hyperscript": "./src/dom-to-hyperscript.mjs"
+    ".": {
+      "types": "./src/index.d.mts",
+      "default": "./src/index.mjs"
+    },
+    "./html": {
+      "types": "./src/tags/html.d.mts",
+      "default": "./src/tags/html.mjs"
+    },
+    "./svg": {
+      "types": "./src/tags/svg.d.mts",
+      "default": "./src/tags/svg.mjs"
+    },
+    "./text-to-dom": {
+      "types": "./src/text-to-dom.d.mts",
+      "default": "./src/text-to-dom.mjs"
+    },
+    "./dom-to-text": {
+      "types": "./src/dom-to-text.d.mts",
+      "default": "./src/dom-to-text.mjs"
+    },
+    "./dom-to-react": {
+      "types": "./src/dom-to-react.d.mts",
+      "default": "./src/dom-to-react.mjs"
+    },
+    "./react-to-dom": {
+      "types": "./src/react-to-dom.d.mts",
+      "default": "./src/react-to-dom.mjs"
+    },
+    "./text-to-react": {
+      "types": "./src/text-to-react.d.mts",
+      "default": "./src/text-to-react.mjs"
+    },
+    "./react-to-text": {
+      "types": "./src/react-to-text.d.mts",
+      "default": "./src/react-to-text.mjs"
+    },
+    "./create-element": {
+      "types": "./src/create-element.d.mts",
+      "default": "./src/create-element.mjs"
+    },
+    "./simple-element": {
+      "types": "./src/simple-element.d.mts",
+      "default": "./src/simple-element.mjs"
+    },
+    "./dom-to-hyperscript": {
+      "types": "./src/dom-to-hyperscript.d.mts",
+      "default": "./src/dom-to-hyperscript.mjs"
+    }
   },
   "files": [
     "src"

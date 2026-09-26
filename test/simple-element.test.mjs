@@ -103,4 +103,91 @@ describe("simple-element", () => {
     const el = connect(document.createElement(tag));
     assert.equal(el.innerHTML, "<p>node light</p>");
   });
+
+  // -- issue #3: "domToText drops open shadow roots created by simple-element
+  // in Chrome" -- Chrome's native `Element#getHTML({serializableShadowRoots:
+  // true})` (what dom-to-text.mjs prefers when available) only includes a
+  // shadow root whose OWN `serializable` flag is true; `attachShadow()` here
+  // never set it. jsdom (this repo's test environment, see
+  // test/_setup-dom.mjs) does not implement `getHTML()` at all -- confirmed
+  // by inspecting `Element.prototype.getHTML` under jsdom@30, it's
+  // `undefined` -- and it neither stores nor exposes the `serializable`
+  // option passed to `attachShadow()` as a readable property either (also
+  // confirmed: `shadowRoot.serializable` is `undefined` even when
+  // `attachShadow({serializable: true})` is called). That means this repo's
+  // test suite CANNOT exercise the actual Chrome bug (or its fix) end to
+  // end: dom-to-text.mjs always falls back to its manual `el.shadowRoot`
+  // walker under jsdom, which was never affected by this bug in the first
+  // place (it doesn't consult `serializable` at all). The most targeted
+  // verification available here is a direct unit test of the fix itself --
+  // that `attachShadow()` is actually called with `serializable: true` for
+  // an open shadow root (and deliberately NOT for a closed one, see the
+  // module doc comment's "SERIALIZABLE SHADOW ROOTS" section for why) --
+  // by spying on `Element.prototype.attachShadow`.
+  describe("attachShadow's serializable flag (issue #3, see comment above)", () => {
+    /** @returns {{calls: object[], restore: () => void}} */
+    function spyOnAttachShadow() {
+      const original = Element.prototype.attachShadow;
+      const calls = [];
+      Element.prototype.attachShadow = function (options) {
+        calls.push(options);
+        return original.call(this, options);
+      };
+      return { calls, restore: () => (Element.prototype.attachShadow = original) };
+    }
+
+    it("shadowOpen: attaches a serializable shadow root, so native getHTML({serializableShadowRoots: true}) does not silently drop it", () => {
+      const spy = spyOnAttachShadow();
+      try {
+        const tag = freshTag("open-serializable");
+        customElements.define(tag, shadowOpen`<span>x</span>`);
+        document.createElement(tag);
+      } finally {
+        spy.restore();
+      }
+      assert.equal(spy.calls.length, 1);
+      assert.equal(spy.calls[0].mode, "open");
+      assert.equal(spy.calls[0].serializable, true);
+    });
+
+    it("shadowClosed: does NOT attach a serializable shadow root (serializable is independent of mode -- opting a closed root in would let getHTML() leak content that element.shadowRoot correctly hides)", () => {
+      const spy = spyOnAttachShadow();
+      try {
+        const tag = freshTag("closed-not-serializable");
+        customElements.define(tag, shadowClosed`<span>secret</span>`);
+        document.createElement(tag);
+      } finally {
+        spy.restore();
+      }
+      assert.equal(spy.calls.length, 1);
+      assert.equal(spy.calls[0].mode, "closed");
+      assert.equal(spy.calls[0].serializable, false);
+    });
+
+    it("constructSuperclass: shadowHTML with mode 'open' (the default) is also attached serializable", () => {
+      const spy = spyOnAttachShadow();
+      try {
+        const tag = freshTag("super-serializable");
+        customElements.define(tag, constructSuperclass({ shadowHTML: "<p>x</p>" }));
+        document.createElement(tag);
+      } finally {
+        spy.restore();
+      }
+      assert.equal(spy.calls.length, 1);
+      assert.equal(spy.calls[0].serializable, true);
+    });
+
+    it("constructSuperclass: shadowHTML with mode 'closed' is NOT attached serializable", () => {
+      const spy = spyOnAttachShadow();
+      try {
+        const tag = freshTag("super-closed-not-serializable");
+        customElements.define(tag, constructSuperclass({ shadowHTML: "<p>x</p>", shadowMode: "closed" }));
+        document.createElement(tag);
+      } finally {
+        spy.restore();
+      }
+      assert.equal(spy.calls.length, 1);
+      assert.equal(spy.calls[0].serializable, false);
+    });
+  });
 });

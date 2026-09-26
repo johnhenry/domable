@@ -46,6 +46,22 @@ describe("domToText", () => {
     assert.equal(domToText(el), "<script>if (1 < 2) {}</script>");
   });
 
+  // Issue #3 ("domToText drops open shadow roots created by simple-element
+  // in Chrome") is a bug in `serializeWithNativeGetHTML()`'s native
+  // `Element#getHTML({serializableShadowRoots: true})` path -- fixed at the
+  // source in simple-element.mjs (`attachShadow({..., serializable: true})`
+  // for open shadow roots; see its module doc comment and
+  // test/simple-element.test.mjs's "attachShadow's serializable flag"
+  // block). That native path cannot be exercised here: jsdom (this repo's
+  // test environment) does not implement `Element#getHTML()` at all, so
+  // every test below always takes `serializeManually()`'s fallback branch,
+  // which reads `el.shadowRoot` directly and was never affected by this bug
+  // (it doesn't consult `serializable`). These tests therefore verify
+  // domToText's shadow-DOM handling is correct under jsdom, but do NOT --
+  // cannot -- reproduce or verify the fix for the actual reported Chrome
+  // bug end-to-end; see test/simple-element.test.mjs for the targeted unit
+  // test of the actual fix (that `attachShadow()` is called with
+  // `serializable: true`).
   it("serializes an OPEN shadow root as declarative shadow DOM", () => {
     tagCounter++;
     const tag = `open-el-${tagCounter}`;

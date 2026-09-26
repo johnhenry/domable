@@ -1,18 +1,15 @@
 /**
- * index.mjs -- public barrel for @johnhenry/domable.
- *
- * HTML/SVG per-tag shorthands (`div`, `circle`, etc.) are deliberately NOT
- * re-exported here -- both tag sets independently define common names
- * (`a`, `audio`, `canvas`, `iframe`, `script`, `style`, `svg`, `title`,
- * `video`, ...), so flattening them into one namespace would silently
- * collide. Import them from their own subpaths instead:
- *   import { div, ul, li } from "@johnhenry/domable/html";
- *   import { circle, path } from "@johnhenry/domable/svg";
+ * index.d.mts -- type declarations for index.mjs, the public barrel for
+ * @johnhenry/domable. HTML/SVG per-tag shorthands are deliberately NOT
+ * re-exported here -- import them from their own subpaths
+ * (`@johnhenry/domable/html`, `@johnhenry/domable/svg`) instead. See
+ * index.mjs's own doc comment for why.
  */
 
 export { default as textToDom } from "./text-to-dom.mjs";
 export { default as domToText } from "./dom-to-text.mjs";
 export { default as domToReact } from "./dom-to-react.mjs";
+export type { ReactElementLike } from "./dom-to-react.mjs";
 export { default as reactToDom } from "./react-to-dom.mjs";
 export { default as textToReact } from "./text-to-react.mjs";
 export { default as reactToText } from "./react-to-text.mjs";
@@ -27,6 +24,7 @@ export {
   _,
   fromString,
 } from "./create-element.mjs";
+export type { Child, ElementProps, ElementFactory } from "./create-element.mjs";
 
 export {
   shadowOpen,
@@ -35,9 +33,16 @@ export {
   register,
   constructSuperclass,
 } from "./simple-element.mjs";
+export type {
+  Templateable,
+  CreateElementOptions,
+  ElementClassBuilder,
+  ConstructSuperclassOptions,
+} from "./simple-element.mjs";
 
 export {
   default as domToHyperscript,
   hyperscriptToSource,
   domToSource,
 } from "./dom-to-hyperscript.mjs";
+export type { HyperscriptNode, HyperscriptToSourceOptions } from "./dom-to-hyperscript.mjs";
