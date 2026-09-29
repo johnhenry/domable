@@ -36,6 +36,7 @@ implementation ([jsdom](https://github.com/jsdom/jsdom), not a mock).
 - [`dom-to-hyperscript` -- DOM to reconstructable source (new in this package)](#dom-to-hyperscript----dom-to-reconstructable-source-new-in-this-package)
 - [Bugs found while merging](#bugs-found-while-merging)
 - [Honest limitations](#honest-limitations)
+- [Family](#family)
 - [License](#license)
 
 ## Install
@@ -320,6 +321,16 @@ real, previously-undetected bugs -- fixed here, not silently ported:
   resulting DOM node, not a real, callable event listener. Attach event
   listeners yourself with `addEventListener()` after building the element;
   this package has no JSX-style synthetic event system.
+
+## Family
+
+- [`@johnhenry/domkit`](https://github.com/johnhenry/domkit) — a toolkit of
+  ~35 custom elements, shadow-DOM/component-authoring primitives, and
+  DOM/React interop glue, built on top of this package's conversions.
+  domkit carries a hard npm dependency on domable (`simple-element` for its
+  custom-element factories, `text-to-dom`/`dom-to-react`/`react-to-dom` for
+  interop) rather than vendoring a second copy — domable is upstream of it,
+  not the reverse.
 
 ## License
 
