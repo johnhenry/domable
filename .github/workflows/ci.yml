@@ -25,3 +25,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+
+  workflow-lint:
+    uses: johnhenry/workflows/.github/workflows/workflow-lint.yml@v1
