@@ -1,5 +1,56 @@
 # Changelog
 
+## 0.0.2
+
+**#9 -- `createElement` gains event listeners, DOM properties, conditional
+attributes and flattened children.** Previously every prop went through
+`setAttribute` and every child through `append()` as-is, so a
+`{ onclick: fn }` prop was stringified into an inline-handler attribute
+(broken, and an inline-script sink strict CSP blocks), there was no way to
+set a property like `value`/`checked` or a custom element's object-valued
+setter, and `cond && el` children rendered as the text `"false"`. Found
+while building miso (a notebook on the @johnhenry packages), which had been
+wrapping `createElement` in its own `h()` to get these. Now:
+
+- **Listeners.** A function-valued `on<Event>` prop (`onclick`, `onInput`)
+  becomes `addEventListener(event.toLowerCase(), fn)` and is never written
+  as an attribute. `"@type"` adds a listener with the type used verbatim
+  (custom events, hyphens, case), taking a function, an `EventListener`
+  object, or `[listener, options]` (`once`, `capture`, `signal`, ...).
+- **Properties.** `".name"` keys set `element.name = value` as-is (objects
+  stay objects), after attributes and children. A prefix, not a guess and
+  not a nested bag -- see the README for why.
+- **Attributes.** `null`/`undefined`/`false` omit the attribute; `true` sets
+  it to `""`. `aria-*`/`data-*` booleans are still written as
+  `"true"`/`"false"` (string-valued attributes). `style` accepts an object
+  (`--custom` and kebab-case keys via `style.setProperty`, camelCase via
+  `style[key]`); `class` arrays skip falsy entries, and `class` also
+  accepts a `{ name: boolean }` object.
+- **Children.** `null`/`undefined`/`true`/`false` are skipped; nested arrays
+  and other iterables (`NodeList`, `Set`, generators) are flattened,
+  collected before appending so live collections are safe; numbers and
+  bigints become text (`0` is rendered). An array (or number) as the second
+  argument is treated as children.
+- Same rules for `createSVGElement`, `createMathMLElement`, `_`, the
+  `/html` and `/svg` shorthands, and `reactToDom` (React-shaped `onClick`
+  is now a real listener; `disabled: false` no longer disables; camelCase
+  `style` objects apply).
+- Types: `Child` widened; new `ListenerSpec`, `StyleObject`, `ClassValue`;
+  `ElementProps` gains `.${string}`/`@${string}` index signatures.
+
+**Behavior changes for existing calls** (each previously produced output
+nobody could have wanted): a function-valued `on*` prop no longer writes a
+stringified attribute; `false`/`null`/`undefined` attribute values (other
+than `aria-*`/`data-*` booleans) are omitted rather than written as
+`"false"`/`"null"`/`"undefined"`, and `true` is `""` rather than `"true"`;
+a `style` object no longer becomes `style="[object Object]"`; `null`/
+`undefined`/boolean children are no longer rendered as text; `.`-prefixed
+keys and non-string `@`-prefixed keys are no longer attributes. String
+`on*` and string `@*` values are still plain attributes. Not done (see
+README "Honest limitations"): no synthetic events or React event-name
+mapping beyond lowercasing, no updating/diffing, listeners and properties
+aren't serialized by `domToText`/`domToHyperscript`.
+
 ## 0.0.1
 
 Three real bugs reported after use in a real showcase project (ORRERY), all fixed with regression tests:
