@@ -99,3 +99,29 @@ describe("reactToDom", () => {
     assert.equal(dom.children[0].namespaceURI, HTML_NS);
   });
 });
+
+describe("reactToDom inherits createElement's prop rules (#9)", () => {
+  it("a React-shaped onClick function becomes a real click listener, not a stringified onclick attribute", () => {
+    let clicks = 0;
+    const dom = reactToDom(el("button", { onClick: () => clicks++, children: "go" }));
+    assert.equal(dom.outerHTML, "<button>go</button>");
+    dom.click();
+    assert.equal(clicks, 1);
+  });
+
+  it('disabled: false is omitted (it used to become disabled="false", which disables); a camelCase style object applies', () => {
+    const dom = reactToDom(el("button", { disabled: false, style: { fontSize: "12px" } }));
+    assert.equal(dom.hasAttribute("disabled"), false);
+    assert.equal(dom.style.fontSize, "12px");
+  });
+
+  it("works inside SVG too: the listener is attached on an SVG-namespaced element", () => {
+    let clicks = 0;
+    const dom = reactToDom(el("svg", { children: el("circle", { r: "1", onClick: () => clicks++ }) }));
+    const circle = dom.firstChild;
+    assert.equal(circle.namespaceURI, "http://www.w3.org/2000/svg");
+    assert.equal(circle.hasAttribute("onclick"), false);
+    circle.dispatchEvent(new Event("click"));
+    assert.equal(clicks, 1);
+  });
+});
