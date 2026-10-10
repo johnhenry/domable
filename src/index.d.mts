@@ -24,7 +24,7 @@ export {
   _,
   fromString,
 } from "./create-element.mjs";
-export type { Child, ElementProps, ElementFactory } from "./create-element.mjs";
+export type { Child, ElementProps, ElementFactory, ListenerSpec, StyleObject, ClassValue } from "./create-element.mjs";
 
 export {
   shadowOpen,

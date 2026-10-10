@@ -37,11 +37,15 @@ locally.
   of the four conversion functions, check which convention its *output*
   actually needs to feed into before renaming or unifying this -- it looks
   like an inconsistency but isn't one.
-- **Attributes are strings; function-valued props silently stringify.**
-  `createElement` sets non-special props via `element.setAttribute(key,
-  value)`. A function (e.g. a React-shaped `onClick` prop) becomes a
-  literal stringified attribute, not a real event listener. See
-  `## Honest limitations` in the README before "fixing" this as a bug.
+- **`createElement` props are explicit, never guessed (issue #9).**
+  `".name"` is a DOM property, `"@type"` (non-string value) is a listener
+  with a verbatim event type, a function-valued `on<Event>` is a listener
+  for the lowercased name, and everything else is an attribute
+  (`null`/`undefined`/`false` skip, `true` -> `""`, except `aria-*`/
+  `data-*` booleans -> `"true"`/`"false"`). Don't add property-vs-attribute
+  sniffing (`key in element`) -- `value` is both, with different meanings,
+  and custom elements may not be upgraded yet. `reactToDom` builds through
+  `createElementNS`, so these rules reach React-shaped props too.
 - **Closed shadow roots are genuinely unrecoverable.** `element.shadowRoot`
   returns `null` for `mode: 'closed'` by spec -- don't add a "fix" that
   tries to reach into it; there is nothing to reach.

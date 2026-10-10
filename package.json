@@ -1,6 +1,6 @@
 {
   "name": "@johnhenry/domable",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Convert between HTML text, real DOM nodes, and React-element-shaped objects; build DOM directly with a createElement()-style hyperscript API; turn HTML strings (or DOM nodes) into Custom Element classes.",
   "type": "module",
   "main": "./src/index.mjs",
